@@ -153,31 +153,15 @@ function PrivateLayout() {
 /* ===================== POST AUTH / POST CHECKOUT ===================== */
 function PostAuthRedirect() {
   const navigate = useNavigate()
-  const { isAuthenticated, isLoading } = useAuth0()
   const { me, meLoading, refreshMe } = useMe()
 
-  // 1) attendre que Auth0 ait fini
   useEffect(() => {
-    if (isLoading) return
-
-    // si pas connecté => retour home
-    if (!isAuthenticated) {
-      navigate('/', { replace: true })
-      return
-    }
-
-    // connecté => on charge /me
-    void refreshMe()
-  }, [isLoading, isAuthenticated])
+    if (!me && !meLoading) void refreshMe()
+  }, [me, meLoading, refreshMe])
 
   useEffect(() => {
-    if (isLoading || !isAuthenticated) return
     if (meLoading) return
-
-    if (!me) {
-      navigate('/pricing', { replace: true })
-      return
-    }
+    if (!me) return
 
     if (me.plan === 'pro' || me.plan === 'pro_plus') {
       navigate('/dashboard', { replace: true })
@@ -190,7 +174,7 @@ function PostAuthRedirect() {
     }
 
     navigate('/pricing', { replace: true })
-  }, [isLoading, isAuthenticated, meLoading, me, navigate])
+  }, [me, meLoading, navigate])
 
   return null
 }
@@ -219,7 +203,7 @@ function PostCheckoutRedirect() {
 function HomeRoute() {
   const { isAuthenticated, isLoading } = useAuth0()
   if (isLoading) return null
-  if (isAuthenticated) return <Navigate to="/post-auth" replace />
+  if (isAuthenticated) return <Navigate to="/dashboard" replace />
   return <LandingPage />
 }
 
@@ -289,13 +273,6 @@ export default function App() {
         headers: { Authorization: `Bearer ${token}` },
       })
 
-      if (!res.ok) {
-        console.error('ME HTTP', res.status)
-        setMe(null)
-        return
-      }
-
-
       const data = await res.json()
       setMe(data)
 
@@ -338,11 +315,10 @@ export default function App() {
                 <Route path="/terms" element={<LegalPage type="terms" />} />
                 <Route path="/privacy" element={<LegalPage type="privacy" />} />
                 <Route path="/legal" element={<LegalPage type="legal" />} />
-                <Route path="/post-auth" element={<PostAuthRedirect />} />
               </Route>
 
               <Route element={<ProtectedRoute />}>
-                
+                <Route path="/post-auth" element={<PostAuthRedirect />} />
                 <Route path="/post-checkout" element={<PostCheckoutRedirect />} />
 
                 <Route element={<PrivateLayout />}>
