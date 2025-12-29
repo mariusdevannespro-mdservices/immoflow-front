@@ -153,15 +153,31 @@ function PrivateLayout() {
 /* ===================== POST AUTH / POST CHECKOUT ===================== */
 function PostAuthRedirect() {
   const navigate = useNavigate()
+  const { isAuthenticated, isLoading } = useAuth0()
   const { me, meLoading, refreshMe } = useMe()
 
+  // 1) attendre que Auth0 ait fini
   useEffect(() => {
-    if (!me && !meLoading) void refreshMe()
-  }, [me, meLoading, refreshMe])
+    if (isLoading) return
+
+    // si pas connecté => retour home
+    if (!isAuthenticated) {
+      navigate('/', { replace: true })
+      return
+    }
+
+    // connecté => on charge /me
+    void refreshMe()
+  }, [isLoading, isAuthenticated])
 
   useEffect(() => {
+    if (isLoading || !isAuthenticated) return
     if (meLoading) return
-    if (!me) return
+
+    if (!me) {
+      navigate('/pricing', { replace: true })
+      return
+    }
 
     if (me.plan === 'pro' || me.plan === 'pro_plus') {
       navigate('/dashboard', { replace: true })
@@ -174,7 +190,7 @@ function PostAuthRedirect() {
     }
 
     navigate('/pricing', { replace: true })
-  }, [me, meLoading, navigate])
+  }, [isLoading, isAuthenticated, meLoading, me, navigate])
 
   return null
 }
