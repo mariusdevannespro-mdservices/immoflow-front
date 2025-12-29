@@ -219,7 +219,7 @@ function PostCheckoutRedirect() {
 function HomeRoute() {
   const { isAuthenticated, isLoading } = useAuth0()
   if (isLoading) return null
-  if (isAuthenticated) return <Navigate to="/dashboard" replace />
+  if (isAuthenticated) return <Navigate to="/post-auth" replace />
   return <LandingPage />
 }
 
@@ -288,6 +288,13 @@ export default function App() {
       const res = await fetch(`${API_URL}/api/me`, {
         headers: { Authorization: `Bearer ${token}` },
       })
+
+      if (!res.ok) {
+        console.error('ME HTTP', res.status)
+        setMe(null)
+        return
+      }
+
 
       const data = await res.json()
       setMe(data)
