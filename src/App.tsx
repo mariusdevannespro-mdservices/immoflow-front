@@ -53,23 +53,12 @@ export const useMe = () => useContext(MeContext)
 
 /* ===================== ROUTE GUARDS ===================== */
 function ProtectedRoute() {
-  const { isAuthenticated, isLoading, loginWithRedirect } = useAuth0()
-  const location = useLocation()
-
-  useEffect(() => {
-    if (isLoading) return
-    if (isAuthenticated) return
-
-    void loginWithRedirect({
-      appState: { returnTo: location.pathname + location.search },
-    })
-  }, [isLoading, isAuthenticated, loginWithRedirect, location])
+  const { isAuthenticated, isLoading } = useAuth0()
 
   if (isLoading) return null
-  if (!isAuthenticated) return null
+  if (!isAuthenticated) return <Navigate to="/" replace />
   return <Outlet />
 }
-
 
 function ProRoute() {
   const { me, meLoading } = useMe()
@@ -326,11 +315,11 @@ export default function App() {
                 <Route path="/terms" element={<LegalPage type="terms" />} />
                 <Route path="/privacy" element={<LegalPage type="privacy" />} />
                 <Route path="/legal" element={<LegalPage type="legal" />} />
-                <Route path="/post-auth" element={<PostAuthRedirect />} />
-                <Route path="/post-checkout" element={<PostCheckoutRedirect />} />
               </Route>
 
               <Route element={<ProtectedRoute />}>
+                <Route path="/post-auth" element={<PostAuthRedirect />} />
+                <Route path="/post-checkout" element={<PostCheckoutRedirect />} />
 
                 <Route element={<PrivateLayout />}>
                   <Route path="/dashboard" element={<DashboardWrapper />} />
