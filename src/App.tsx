@@ -315,10 +315,11 @@ export default function App() {
                 <Route path="/terms" element={<LegalPage type="terms" />} />
                 <Route path="/privacy" element={<LegalPage type="privacy" />} />
                 <Route path="/legal" element={<LegalPage type="legal" />} />
+                <Route path="/post-auth" element={<PostAuthRedirect />} />
               </Route>
 
               <Route element={<ProtectedRoute />}>
-                <Route path="/post-auth" element={<PostAuthRedirect />} />
+                
                 <Route path="/post-checkout" element={<PostCheckoutRedirect />} />
 
                 <Route element={<PrivateLayout />}>
