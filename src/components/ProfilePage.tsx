@@ -246,27 +246,6 @@ export function ProfilePage() {
             </div>
           </div>
 
-          {/* Sécurité */}
-          <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
-            <div className="flex items-center gap-3 mb-6">
-              <Shield className="w-5 h-5 text-emerald-600 dark:text-emerald-500" />
-              <h2>Sécurité</h2>
-            </div>
-
-            <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-              Vous pouvez réinitialiser votre mot de passe si nécessaire.
-            </p>
-
-            <button
-              onClick={handleResetPassword}
-              type="button"
-              className="inline-flex items-center gap-2 px-6 py-3 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
-            >
-              <KeyRound className="w-5 h-5" />
-              Réinitialiser mon mot de passe
-            </button>
-          </div>
-
           {/* Danger zone */}
           <div className="bg-white dark:bg-gray-800 rounded-xl border border-red-200 dark:border-red-900/40 p-6">
             <div className="flex items-center gap-3 mb-3">

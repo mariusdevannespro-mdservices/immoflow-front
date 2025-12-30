@@ -76,9 +76,12 @@ export function BillingPage() {
     return p === 'free'
   }, [summary?.plan])
 
+  // ✅ NEW: lifetime
+  const isLifetime = useMemo(() => summary?.stripeStatus === 'lifetime', [summary?.stripeStatus])
+
   const openPortal = async () => {
-    // 🔒 Empêche l'accès au portail Stripe si plan FREE
-    if (isFree) return
+    // 🔒 Empêche l'accès au portail Stripe si plan FREE ou lifetime
+    if (isFree || isLifetime) return
 
     try {
       const token = await getAccessTokenSilently({
@@ -109,7 +112,7 @@ export function BillingPage() {
   }
 
   const cancelSubscription = async () => {
-    if (isFree) return
+    if (isFree || isLifetime) return
 
     const ok = window.confirm(
       "Tu es sûr de vouloir annuler ton abonnement ?\n\nTu garderas l’accès jusqu’à la fin de la période en cours."
@@ -158,6 +161,7 @@ export function BillingPage() {
   const statusLabel = useMemo(() => {
     const s = summary?.stripeStatus
     if (!s) return 'Aucun abonnement'
+    if (s === 'lifetime') return 'Accès à vie'
     if (s === 'active') return 'Actif'
     if (s === 'trialing') return 'Essai'
     if (s === 'past_due') return 'Paiement en retard'
@@ -177,6 +181,8 @@ export function BillingPage() {
 
   const invoices = summary?.invoices ?? []
   const pm = summary?.paymentMethod
+
+  const disableStripeActions = isFree || isLifetime
 
   if (loading) {
     return (
@@ -249,22 +255,44 @@ export function BillingPage() {
                   <span>Fin de période / prochaine facturation : {nextBillingLabel}</span>
                 </div>
               )}
+
+              {isLifetime && (
+                <div className="mt-4 text-sm text-emerald-800 dark:text-emerald-400">
+                  🎉 Licence <b>Pro+</b> à vie active — aucune gestion Stripe n’est nécessaire.
+                </div>
+              )}
             </div>
 
             <div className="flex gap-3">
-              <Link
-                to="/upgrade"
-                className="flex-1 px-6 py-3 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors shadow-lg shadow-emerald-600/20 text-center"
-              >
-                Changer de plan
-              </Link>
+              {!isLifetime ? (
+                <Link
+                  to="/upgrade"
+                  className="flex-1 px-6 py-3 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors shadow-lg shadow-emerald-600/20 text-center"
+                >
+                  Changer de plan
+                </Link>
+              ) : (
+                <button
+                  disabled
+                  className="flex-1 px-6 py-3 bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-600 rounded-lg cursor-not-allowed"
+                  type="button"
+                >
+                  Accès à vie actif
+                </button>
+              )}
 
               <button
                 onClick={cancelSubscription}
-                disabled={isFree}
-                title={isFree ? 'Portail Stripe indisponible en plan Gratuit' : 'Annuler'}
+                disabled={disableStripeActions}
+                title={
+                  isLifetime
+                    ? 'Licence lifetime active – aucune gestion Stripe'
+                    : isFree
+                      ? 'Portail Stripe indisponible en plan Gratuit'
+                      : 'Annuler'
+                }
                 className={`flex-1 px-6 py-3 rounded-lg transition-colors ${
-                  isFree
+                  disableStripeActions
                     ? 'bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-600 cursor-not-allowed'
                     : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
                 }`}
@@ -274,9 +302,15 @@ export function BillingPage() {
               </button>
             </div>
 
-            {isFree && (
+            {isFree && !isLifetime && (
               <p className="mt-3 text-sm text-gray-600 dark:text-gray-400">
                 Tu es en plan Gratuit : pas d’accès au portail Stripe.
+              </p>
+            )}
+
+            {isLifetime && (
+              <p className="mt-3 text-sm text-gray-600 dark:text-gray-400">
+                Tu es en licence lifetime : le portail Stripe, l’annulation et le changement de plan sont désactivés.
               </p>
             )}
           </div>
@@ -322,10 +356,16 @@ export function BillingPage() {
 
                 <button
                   onClick={openPortal}
-                  disabled={isFree}
-                  title={isFree ? 'Portail Stripe indisponible en plan Gratuit' : 'Modifier la carte'}
+                  disabled={disableStripeActions}
+                  title={
+                    isLifetime
+                      ? 'Licence lifetime active – aucune gestion Stripe'
+                      : isFree
+                        ? 'Portail Stripe indisponible en plan Gratuit'
+                        : 'Modifier la carte'
+                  }
                   className={`w-full px-4 py-3 rounded-lg transition-colors ${
-                    isFree
+                    disableStripeActions
                       ? 'bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-600 cursor-not-allowed'
                       : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
                   }`}
@@ -341,10 +381,16 @@ export function BillingPage() {
                 </p>
                 <button
                   onClick={openPortal}
-                  disabled={isFree}
-                  title={isFree ? 'Portail Stripe indisponible en plan Gratuit' : 'Ouvrir le portail Stripe'}
+                  disabled={disableStripeActions}
+                  title={
+                    isLifetime
+                      ? 'Licence lifetime active – aucune gestion Stripe'
+                      : isFree
+                        ? 'Portail Stripe indisponible en plan Gratuit'
+                        : 'Ouvrir le portail Stripe'
+                  }
                   className={`w-full px-4 py-3 rounded-lg transition-colors ${
-                    isFree
+                    disableStripeActions
                       ? 'bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-600 cursor-not-allowed'
                       : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
                   }`}
@@ -443,12 +489,7 @@ function InvoiceRow({ invoice }: { invoice: BillingInvoice }) {
             <Download className="w-5 h-5" />
           </a>
         ) : (
-          <button
-            className="p-2 text-gray-400 cursor-not-allowed"
-            title="Lien de facture indisponible"
-            type="button"
-            disabled
-          >
+          <button className="p-2 text-gray-400 cursor-not-allowed" title="Lien de facture indisponible" type="button" disabled>
             <Download className="w-5 h-5" />
           </button>
         )}
