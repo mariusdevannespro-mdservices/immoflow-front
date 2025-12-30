@@ -4,6 +4,7 @@ import { useAuth0 } from '@auth0/auth0-react'
 import { useMemo } from 'react'
 import { useMe } from '../App'
 import { PLANS } from "../config/plans"
+import { useState } from "react"
 
 
 export function PricingPage() {
@@ -100,6 +101,46 @@ export function PricingPage() {
 
     navigate('/dashboard', { replace: true })
   }
+
+  const [licenseKey, setLicenseKey] = useState("")
+  const [redeemLoading, setRedeemLoading] = useState(false)
+
+  const redeemKey = async () => {
+    if (!licenseKey.trim()) return alert("Entre une clé")
+
+    setRedeemLoading(true)
+
+    try {
+      const token = await getAccessTokenSilently({
+        authorizationParams: {
+          audience: import.meta.env.VITE_AUTH0_AUDIENCE,
+          scope: 'openid profile email',
+        },
+      })
+
+      const res = await fetch(`${API_URL}/api/billing/redeem`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ code: licenseKey.trim() }),
+      })
+
+      const data = await res.json()
+
+      if (!res.ok) {
+        alert(data?.error ?? "Clé invalide")
+        return
+      }
+
+      alert("🎉 Licence Pro+ activée à vie !")
+      window.location.reload()
+    } finally {
+      setRedeemLoading(false)
+    }
+  }
+
 
   return (
     <div className="py-20">
@@ -246,6 +287,28 @@ export function PricingPage() {
             </div>
           </div>
         </div>
+
+        {isAuthenticated && (
+          <div className="mt-14 max-w-md mx-auto bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-6 text-center">
+            <h3 className="mb-4">Tu as une clé lifetime ?</h3>
+
+            <div className="flex gap-2">
+              <input
+                value={licenseKey}
+                onChange={(e) => setLicenseKey(e.target.value)}
+                placeholder="XXXX-XXXX-XXXX-XXXX"
+                className="flex-1 px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-transparent"
+              />
+              <button
+                onClick={redeemKey}
+                disabled={redeemLoading}
+                className="px-4 py-2 rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 disabled:opacity-50"
+              >
+                Activer
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* FAQ seulement en mode normal */}
         {!isUpgradeMode && (
