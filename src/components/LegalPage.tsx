@@ -48,6 +48,11 @@ export function LegalPage({ type }: { type: "terms" | "privacy" | "legal" }) {
           content:
             "ImmoFlow se réserve le droit de modifier les présentes CGU à tout moment. Les utilisateurs seront informés de toute modification importante. La date de dernière mise à jour est affichée en haut de page.",
         },
+        {
+          title: "9. Droit applicable",
+          content:
+            "Les présentes CGU sont soumises au droit français. En cas de litige, et à défaut de résolution amiable, les tribunaux français seront seuls compétents."
+        },
       ],
     },
 
@@ -65,34 +70,41 @@ export function LegalPage({ type }: { type: "terms" | "privacy" | "legal" }) {
             "Vos données sont utilisées pour :\n- fournir et améliorer le service,\n- gérer votre compte,\n- assurer la sécurité et prévenir la fraude,\n- gérer la facturation et les paiements si vous souscrivez à une offre payante.",
         },
         {
-          title: "3. Sous-traitants / Prestataires",
+          title: "3. Base légale du traitement",
+          content:
+            "Le traitement de vos données repose sur l’exécution du contrat liant l’utilisateur à ImmoFlow, sur votre consentement lorsque requis, ainsi que sur nos obligations légales."
+        },
+        {
+          title: "4. Sous-traitants / Prestataires",
           content:
             "Nous faisons appel à des prestataires nécessaires au fonctionnement du service :\n- Auth0 : authentification et gestion des sessions\n- Stripe : paiement et gestion de l'abonnement\n\nNous ne vendons pas vos données personnelles.",
         },
         {
-          title: "4. Protection des données",
+          title: "5. Protection des données",
           content:
             "Nous mettons en œuvre des mesures de sécurité techniques et organisationnelles appropriées pour protéger vos données contre tout accès non autorisé, modification, divulgation ou destruction.",
         },
         {
-          title: "5. Cookies",
+          title: "6. Cookies",
           content:
             "Notre site peut utiliser des cookies techniques nécessaires au fonctionnement (ex : maintien de session). Si des cookies d'analyse sont ajoutés à l'avenir, un bandeau de consentement sera mis en place.",
         },
         {
-          title: "6. Vos droits",
+          title: "7. Vos droits",
           content:
             "Conformément au RGPD, vous disposez d'un droit d'accès, de rectification, de suppression et de portabilité de vos données, ainsi que d'un droit d'opposition et de limitation. Vous pouvez exercer ces droits en nous contactant à " +
             CONTACT_EMAIL +
             ".",
         },
         {
-          title: "7. Conservation des données",
+          title: "8. Conservation des données",
           content:
-            "Vos données sont conservées pendant la durée nécessaire aux finalités pour lesquelles elles ont été collectées.\nEn cas de suppression de compte ou d'annulation, vos données peuvent être conservées jusqu'à 30 jours, sauf obligation légale contraire.",
+            "Les données liées au compte sont conservées tant que le compte est actif.\n" +
+            "Les données de facturation sont conservées pendant 10 ans conformément aux obligations légales.\n" +
+            "Après suppression du compte, les données sont supprimées ou anonymisées sous 30 jours, sauf obligation légale contraire."
         },
         {
-          title: "8. Contact",
+          title: "9. Contact",
           content:
             "Pour toute question concernant cette politique de confidentialité, vous pouvez nous contacter à " +
             CONTACT_EMAIL +
@@ -107,7 +119,7 @@ export function LegalPage({ type }: { type: "terms" | "privacy" | "legal" }) {
         {
           title: "Éditeur du site",
           content:
-            "ImmoFlow\nÉditeur : Marius Devannes (micro-entreprise)\nSIRET : en cours d'immatriculation\nAdresse : (adresse privée)\nEmail : " +
+            "ImmoFlow\nÉditeur : Marius Devannes (micro-entreprise)\nSIRET : en cours d'immatriculation\nAdresse : 1 rue de la tournerie Solesmes\nEmail : " +
             CONTACT_EMAIL,
         },
         {
@@ -117,7 +129,10 @@ export function LegalPage({ type }: { type: "terms" | "privacy" | "legal" }) {
         {
           title: "Hébergement",
           content:
-            "Hébergeur : à compléter\n(Indique ici le nom + adresse de l'hébergeur une fois choisi : Vercel, OVH, Scaleway, etc.)",
+            "Hébergement du front-end : Vercel Inc.\n" +
+            "Adresse : 340 S Lemon Ave #4133, Walnut, CA 91789, USA\n\n" +
+            "Hébergement de l’API : Render Services, Inc.\n" +
+            "Adresse : 525 Brannan St, Suite 300, San Francisco, CA 94107, USA"
         },
         {
           title: "Contact",
