@@ -15,6 +15,10 @@ import { ProfilePage } from './components/ProfilePage'
 import { BillingPage } from './components/BillingPage'
 import { LegalPage } from './components/LegalPage'
 import { ProjectsResultsSplitPage } from './components/ProjectsResultsSplitPage'
+import { SimulationInvestissementLocatifPage } from "./components/seo/SimulationInvestissementLocatifPage"
+import { CashflowImmobilierPage } from "./components/seo/CashflowImmobilierPage"
+import { CalculRentabiliteLocativePage } from "./components/seo/CalculRentabiliteLocativePage"
+import { RentabiliteLMNPPage } from "./components/seo/RentabiliteLMNPPage"
 
 /* ===================== THEME ===================== */
 type ThemeContextType = { isDark: boolean; toggleTheme: () => void }
@@ -310,6 +314,10 @@ export default function App() {
               <Route element={<PublicLayout />}>
                 <Route path="/" element={<HomeRoute />} />
                 <Route path="/pricing" element={<PricingPage />} />
+                <Route path="/simulation-investissement-locatif" element={<SimulationInvestissementLocatifPage />} />
+                <Route path="/cashflow-immobilier" element={<CashflowImmobilierPage />} />
+                <Route path="/calcul-rentabilite-locative" element={<CalculRentabiliteLocativePage />} />
+                <Route path="/rentabilite-lmnp" element={<RentabiliteLMNPPage />} />
                 <Route path="/login" element={<AuthRedirect mode="login" />} />
                 <Route path="/signup" element={<AuthRedirect mode="signup" />} />
                 <Route path="/forgot-password" element={<ForgotPasswordPage />} />
