@@ -215,7 +215,7 @@ function FallbackRedirect() {
 
 /* ===================== APP ===================== */
 export default function App() {
-  const { isAuthenticated, getAccessTokenSilently } = useAuth0()
+  const { isAuthenticated, getAccessTokenSilently, loginWithRedirect, logout } = useAuth0()
   const [me, setMe] = useState<Me>(null)
   const [meLoading, setMeLoading] = useState(false)
 
@@ -265,7 +265,7 @@ export default function App() {
       const token = await getAccessTokenSilently({
         authorizationParams: {
           audience: import.meta.env.VITE_AUTH0_AUDIENCE,
-          scope: 'openid profile email',
+          scope: "openid profile email offline_access",
         },
       })
 
@@ -275,13 +275,18 @@ export default function App() {
 
       const data = await res.json()
       setMe(data)
-
-      // ✅ applique le theme depuis la BDD
-      const theme = (data?.theme as 'light' | 'dark' | undefined) ?? 'light'
-      setIsDark(theme === 'dark')
     } catch (e) {
-      console.error('refreshMe error:', e)
+      console.error("refreshMe error:", e)
       setMe(null)
+
+      const err = e?.error || e?.code
+      if (err === "missing_refresh_token" || err === "login_required") {
+        // option A: relogin direct
+        await loginWithRedirect({ appState: { returnTo: "/post-auth" } })
+
+        // option B: ou forcer une déconnexion complète avant
+        // logout({ logoutParams: { returnTo: window.location.origin } })
+      }
     } finally {
       setMeLoading(false)
     }
