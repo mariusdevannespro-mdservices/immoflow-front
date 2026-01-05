@@ -281,11 +281,7 @@ export default function App() {
 
       const err = e?.error || e?.code
       if (err === "missing_refresh_token" || err === "login_required") {
-        // option A: relogin direct
-        await loginWithRedirect({ appState: { returnTo: "/post-auth" } })
-
-        // option B: ou forcer une déconnexion complète avant
-        // logout({ logoutParams: { returnTo: window.location.origin } })
+        logout({ logoutParams: { returnTo: window.location.origin } })
       }
     } finally {
       setMeLoading(false)
