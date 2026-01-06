@@ -119,7 +119,7 @@ export function LegalPage({ type }: { type: "terms" | "privacy" | "legal" }) {
         {
           title: "Éditeur du site",
           content:
-            "ImmoFlow\nÉditeur : Marius Devannes (micro-entreprise)\nSIRET : en cours d'immatriculation\nAdresse : 1 rue de la tournerie Solesmes\nEmail : " +
+            "ImmoFlow\nÉditeur : Marius Devannes DEVANNES Marius (Entrepreneur Individuel - EI)\nSIRET : 999 115 025\nRCS : Le Mans\nAdresse : 1 rue de la tournerie Solesmes, France\nEmail : " +
             CONTACT_EMAIL,
         },
         {
