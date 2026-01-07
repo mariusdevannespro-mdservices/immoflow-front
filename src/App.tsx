@@ -168,22 +168,12 @@ function PostAuthRedirect() {
   useEffect(() => {
     if (meLoading) return
     if (!me) return
-
-    if (me.plan === 'pro' || me.plan === 'pro_plus') {
-      navigate('/dashboard', { replace: true })
-      return
-    }
-
-    if (me.hasStartedFree) {
-      navigate('/dashboard', { replace: true })
-      return
-    }
-
-    navigate('/pricing', { replace: true })
+    navigate('/dashboard', { replace: true })
   }, [me, meLoading, navigate])
 
   return null
 }
+
 
 function PostCheckoutRedirect() {
   const navigate = useNavigate()
