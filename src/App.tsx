@@ -1,6 +1,6 @@
 import { createContext, useContext, useMemo, useState, useEffect } from 'react'
 import { Routes, Route, Navigate, Outlet, NavLink, Link, useNavigate, useLocation } from 'react-router-dom'
-import { Home, CreditCard, User, LayoutDashboard, BarChart3, ListChecks, Columns3, Menu, X, Sun, Moon } from 'lucide-react'
+import { Home, CreditCard, User, LayoutDashboard, ListChecks, Columns3, Menu, X, Sun, Moon } from 'lucide-react'
 import { useAuth0 } from '@auth0/auth0-react'
 
 import { LandingPage } from './components/LandingPage'
@@ -20,6 +20,9 @@ import { CashflowImmobilierPage } from "./components/seo/CashflowImmobilierPage"
 import { CalculRentabiliteLocativePage } from "./components/seo/CalculRentabiliteLocativePage"
 import { RentabiliteLMNPPage } from "./components/seo/RentabiliteLMNPPage"
 
+// ✅ NEW (page publique simulateur rapide)
+import { PublicQuickSimPage } from './components/PublicQuickSimPage'
+
 /* ===================== THEME ===================== */
 type ThemeContextType = { isDark: boolean; toggleTheme: () => void }
 const ThemeContext = createContext<ThemeContextType>({ isDark: false, toggleTheme: () => {} })
@@ -31,7 +34,6 @@ type Me = {
   email?: string | null
   avatarKey?: string | null
 
-  // ✅ NEW
   theme?: 'light' | 'dark' | null
 
   plan?: string
@@ -219,7 +221,7 @@ function FallbackRedirect() {
 
 /* ===================== APP ===================== */
 export default function App() {
-  const { isAuthenticated, getAccessTokenSilently, loginWithRedirect, logout } = useAuth0()
+  const { isAuthenticated, getAccessTokenSilently, logout } = useAuth0()
   const [me, setMe] = useState<Me>(null)
   const [meLoading, setMeLoading] = useState(false)
 
@@ -248,7 +250,6 @@ export default function App() {
       })
     } catch (e) {
       console.error('saveTheme error:', e)
-      // pas bloquant : on garde le theme local
     }
   }
 
@@ -279,7 +280,7 @@ export default function App() {
 
       const data = await res.json()
       setMe(data)
-    } catch (e) {
+    } catch (e: any) {
       console.error("refreshMe error:", e)
       setMe(null)
 
@@ -295,7 +296,6 @@ export default function App() {
   useEffect(() => {
     if (!isAuthenticated) {
       setMe(null)
-      // optionnel: reset theme si déconnecté
       setIsDark(false)
       return
     }
@@ -314,10 +314,16 @@ export default function App() {
               <Route element={<PublicLayout />}>
                 <Route path="/" element={<HomeRoute />} />
                 <Route path="/pricing" element={<PricingPage />} />
+
+                {/* ✅ NEW: simulateur public sans compte */}
+                <Route path="/simulateur-gratuit" element={<PublicQuickSimPage />} />
+
+                {/* SEO pages */}
                 <Route path="/simulation-investissement-locatif" element={<SimulationInvestissementLocatifPage />} />
                 <Route path="/cashflow-immobilier" element={<CashflowImmobilierPage />} />
                 <Route path="/calcul-rentabilite-locative" element={<CalculRentabiliteLocativePage />} />
                 <Route path="/rentabilite-lmnp" element={<RentabiliteLMNPPage />} />
+
                 <Route path="/login" element={<AuthRedirect mode="login" />} />
                 <Route path="/signup" element={<AuthRedirect mode="signup" />} />
                 <Route path="/forgot-password" element={<ForgotPasswordPage />} />
@@ -441,18 +447,12 @@ function PublicNav({ isAuthenticated }: { isAuthenticated: boolean }) {
                 >
                   Connexion
                 </button>
-                <button
-                  onClick={() =>
-                    loginWithRedirect({
-                      appState: { returnTo: '/post-auth' },
-                      authorizationParams: { screen_hint: 'signup' },
-                    })
-                  }
+                <Link
+                  to="/simulateur-gratuit"
                   className="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors"
-                  type="button"
                 >
                   Tester gratuitement
-                </button>
+                </Link>
               </>
             )}
           </div>

@@ -43,7 +43,7 @@ export function LandingPage() {
 
             <div className="flex flex-col sm:flex-row gap-4">
               <Link
-                to="/signup"
+                to="/simulateur-gratuit"
                 className="px-8 py-4 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors shadow-lg shadow-emerald-600/20 text-center inline-flex items-center justify-center gap-2"
               >
                 Tester gratuitement <ArrowRight className="w-5 h-5" />
@@ -204,7 +204,7 @@ export function LandingPage() {
 
           <div className="text-center mt-10">
             <Link
-              to="/signup"
+              to="/simulateur-gratuit"
               className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors shadow-lg shadow-emerald-600/20"
             >
               Tester sur mon projet <ArrowRight className="w-5 h-5" />
@@ -292,7 +292,7 @@ export function LandingPage() {
             Teste ImmoFlow sur un projet réel et obtiens ton verdict en quelques minutes.
           </p>
           <Link
-            to="/signup"
+            to="/simulateur-gratuit"
             className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-white text-emerald-700 rounded-lg hover:bg-emerald-50 transition-colors shadow-xl"
           >
             Tester gratuitement <ArrowRight className="w-5 h-5" />
