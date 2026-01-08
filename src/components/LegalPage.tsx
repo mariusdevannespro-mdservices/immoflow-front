@@ -1,8 +1,8 @@
 import { Link } from "react-router-dom"
 
 export function LegalPage({ type }: { type: "terms" | "privacy" | "legal" }) {
-  const LAST_UPDATE = "24 décembre 2025"
-  const CONTACT_EMAIL = "contact@immoflow.fr"
+  const LAST_UPDATE = "08 janvier 2026"
+  const CONTACT_EMAIL = "contact@immoflow.pro"
 
   const content = {
     terms: {

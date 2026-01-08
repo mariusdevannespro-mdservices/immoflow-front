@@ -356,7 +356,7 @@ export function LandingPage() {
 
             <div>
               <h4 className="mb-3 text-gray-900 dark:text-gray-100 font-semibold">Contact</h4>
-              <p className="text-gray-600 dark:text-gray-400 text-sm">contact@immoflow.fr</p>
+              <p className="text-gray-600 dark:text-gray-400 text-sm">contact@immoflow.pro</p>
             </div>
           </div>
 
