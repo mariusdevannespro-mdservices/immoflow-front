@@ -168,6 +168,9 @@ function PostAuthRedirect() {
   useEffect(() => {
     if (meLoading) return
     if (!me) return
+    if (typeof window !== "undefined" && (window as any).gtag) {
+      ;(window as any).gtag('event', 'sign_up', { method: 'auth0' })
+    }
     navigate('/dashboard', { replace: true })
   }, [me, meLoading, navigate])
 
