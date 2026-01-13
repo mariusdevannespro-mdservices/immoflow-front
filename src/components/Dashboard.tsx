@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState, type ReactNode } from "react"
-import { Plus, TrendingUp, TrendingDown, MapPin, Eye, Edit, BarChart3 } from "lucide-react"
+import { Plus, TrendingUp, TrendingDown, MapPin, Eye, Edit, BarChart3, Sparkles } from "lucide-react"
 import { useAuth0 } from "@auth0/auth0-react"
 import { useNavigate } from "react-router-dom"
 import { ProjectsAPI, type ProjectDTO } from "../services/projects.api"
@@ -160,6 +160,7 @@ export function Dashboard({
   }, [getAccessTokenSilently])
 
   const projects = useMemo(() => projectsRaw.map(computeVM), [projectsRaw])
+  const hasProjects = projects.length > 0
 
   const stats = useMemo(() => {
     const total = projects.length
@@ -185,7 +186,8 @@ export function Dashboard({
     ? "bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed shadow-none"
     : "bg-emerald-600 text-white hover:bg-emerald-700 shadow-lg shadow-emerald-600/20"
 
-  const createBtnLabel = freeLimitReached ? "Limite atteinte (Free)" : "Nouveau projet"
+  // ✅ CTA : “Tester” plutôt que “Créer”
+  const createBtnLabel = freeLimitReached ? "Limite atteinte (Free)" : hasProjects ? "Nouveau projet" : "Tester un projet"
 
   return (
     <div className="p-6 lg:p-8 max-w-7xl mx-auto">
@@ -193,8 +195,10 @@ export function Dashboard({
       <div className="mb-8">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
           <div>
-            <h1 className="mb-2">Mes projets</h1>
-            <p className="text-gray-600 dark:text-gray-400">Gérez et analysez vos investissements immobiliers</p>
+            <h1 className="mb-2">{hasProjects ? "Mes projets" : "Test rapide"}</h1>
+            <p className="text-gray-600 dark:text-gray-400">
+              {hasProjects ? "Gérez et analysez vos investissements immobiliers" : "Découvre si ton prochain projet est rentable en 2 minutes."}
+            </p>
           </div>
 
           <button
@@ -203,37 +207,39 @@ export function Dashboard({
             disabled={freeLimitReached}
             className={`flex items-center justify-center gap-2 px-6 py-3 rounded-lg transition-colors ${createBtnClass}`}
           >
-            <Plus className="w-5 h-5" />
+            {hasProjects ? <Plus className="w-5 h-5" /> : <Sparkles className="w-5 h-5" />}
             {createBtnLabel}
           </button>
         </div>
 
-        {/* Quick Stats */}
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <StatCard
-            label="Projets total"
-            value={`${stats.total}`}
-            icon={<BarChart3 className="w-5 h-5 text-emerald-600 dark:text-emerald-500" />}
-          />
-          <StatCard
-            label="Cashflow moyen (net)"
-            value={`${stats.avgCashflow}€`}
-            subtext="/mois"
-            icon={<TrendingUp className="w-5 h-5 text-emerald-600 dark:text-emerald-500" />}
-          />
-          <StatCard
-            label="Rentabilité moyenne"
-            value={`${stats.avgRentability}%`}
-            icon={<TrendingUp className="w-5 h-5 text-emerald-600 dark:text-emerald-500" />}
-          />
-          <StatCard
-            label="Bons deals"
-            value={`${stats.goodDeals}/${stats.total}`}
-            icon={<TrendingUp className="w-5 h-5 text-emerald-600 dark:text-emerald-500" />}
-          />
-        </div>
+        {/* Quick Stats : on les cache quand 0 projet (sinon ça affiche du 0 partout et ça démotive) */}
+        {hasProjects && (
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <StatCard
+              label="Projets total"
+              value={`${stats.total}`}
+              icon={<BarChart3 className="w-5 h-5 text-emerald-600 dark:text-emerald-500" />}
+            />
+            <StatCard
+              label="Cashflow moyen (net)"
+              value={`${stats.avgCashflow}€`}
+              subtext="/mois"
+              icon={<TrendingUp className="w-5 h-5 text-emerald-600 dark:text-emerald-500" />}
+            />
+            <StatCard
+              label="Rentabilité moyenne"
+              value={`${stats.avgRentability}%`}
+              icon={<TrendingUp className="w-5 h-5 text-emerald-600 dark:text-emerald-500" />}
+            />
+            <StatCard
+              label="Bons deals"
+              value={`${stats.goodDeals}/${stats.total}`}
+              icon={<TrendingUp className="w-5 h-5 text-emerald-600 dark:text-emerald-500" />}
+            />
+          </div>
+        )}
 
-        {/* ✅ Petit message si limit reached */}
+        {/* ✅ Message si limite atteinte (seulement si tu as déjà 1 projet) */}
         {freeLimitReached && (
           <div className="mt-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-900/40 text-amber-800 dark:text-amber-200 rounded-xl p-4">
             Ton compte est en <b>FREE</b> : tu es limité à <b>1 projet</b>. Passe en Pro pour en créer autant que tu veux.
@@ -255,7 +261,7 @@ export function Dashboard({
         <div className="bg-white dark:bg-gray-800 rounded-xl border border-red-200 dark:border-red-900/40 p-6 text-red-700 dark:text-red-300">
           {error}
         </div>
-      ) : projects.length > 0 ? (
+      ) : hasProjects ? (
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
           {projects.map((project) => (
             <ProjectCard
@@ -267,22 +273,58 @@ export function Dashboard({
           ))}
         </div>
       ) : (
-        /* Empty State */
-        <div className="text-center py-20">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-full mb-4">
-            <TrendingUp className="w-8 h-8 text-gray-400" />
+        /* Empty State (rework conversion) */
+        <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-8 sm:p-10">
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-8">
+            <div className="max-w-xl">
+              <div className="inline-flex items-center justify-center w-14 h-14 bg-emerald-50 dark:bg-emerald-900/20 rounded-2xl mb-4">
+                <Sparkles className="w-7 h-7 text-emerald-600 dark:text-emerald-500" />
+              </div>
+
+              <h2 className="mb-2">Ton prochain investissement est-il rentable ?</h2>
+              <p className="text-gray-600 dark:text-gray-400 mb-6">
+                Lance une simulation rapide, vois le cashflow et la rentabilité, puis décide si ça vaut le coup.
+              </p>
+
+              <div className="flex flex-col sm:flex-row gap-3 sm:items-center">
+                <button
+                  type="button"
+                  onClick={handleCreateProject}
+                  disabled={freeLimitReached}
+                  className={`inline-flex items-center justify-center gap-2 px-6 py-3 rounded-lg transition-colors ${createBtnClass}`}
+                >
+                  <Sparkles className="w-5 h-5" />
+                  {freeLimitReached ? "Voir les offres Pro" : "Tester un projet (2 min)"}
+                </button>
+              </div>
+
+              <div className="mt-6 grid sm:grid-cols-3 gap-3">
+                <StepChip number="1" text="Renseigne prix & loyer" />
+                <StepChip number="2" text="Vois cashflow & renta" />
+                <StepChip number="3" text="Décide si ça vaut le coup" />
+              </div>
+            </div>
+
+            <div className="flex-1">
+              <div className="rounded-2xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/30 p-6">
+                <div className="text-sm text-gray-600 dark:text-gray-400 mb-3">Ce que tu obtiens en 2 minutes</div>
+                <ul className="space-y-2 text-sm">
+                  <li className="flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                    Cashflow estimé (avant / après impôts)
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                    Rentabilité + verdict “bon deal / moyen / mauvais”
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                    Option Pro : optimisation fiscale & détails avancés
+                  </li>
+                </ul>
+              </div>
+            </div>
           </div>
-          <h2 className="mb-2">Aucun projet pour le moment</h2>
-          <p className="text-gray-600 dark:text-gray-400 mb-6">Crée ton premier projet pour commencer à analyser tes investissements</p>
-          <button
-            type="button"
-            onClick={handleCreateProject}
-            disabled={freeLimitReached}
-            className={`inline-flex items-center gap-2 px-6 py-3 rounded-lg transition-colors ${createBtnClass}`}
-          >
-            <Plus className="w-5 h-5" />
-            {freeLimitReached ? "Limite atteinte (Free)" : "Créer mon premier projet"}
-          </button>
         </div>
       )}
     </div>
@@ -310,6 +352,17 @@ function StatCard({
         <span className="text-2xl font-semibold">{value}</span>
         {subtext && <span className="text-sm text-gray-500 dark:text-gray-400">{subtext}</span>}
       </div>
+    </div>
+  )
+}
+
+function StepChip({ number, text }: { number: string; text: string }) {
+  return (
+    <div className="flex items-center gap-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-4 py-3">
+      <div className="w-7 h-7 rounded-full bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400 flex items-center justify-center text-sm font-semibold">
+        {number}
+      </div>
+      <div className="text-sm text-gray-700 dark:text-gray-200">{text}</div>
     </div>
   )
 }

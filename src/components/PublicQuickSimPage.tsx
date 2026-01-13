@@ -1,6 +1,19 @@
 import React, { useEffect, useMemo, useState } from "react"
 import { Link } from "react-router-dom"
-import { Calculator, CheckCircle2, XCircle, AlertCircle, ArrowRight, TrendingUp, TrendingDown, Lock } from "lucide-react"
+import {
+  Calculator,
+  CheckCircle2,
+  XCircle,
+  AlertCircle,
+  ArrowRight,
+  TrendingUp,
+  TrendingDown,
+  Lock,
+  Sparkles,
+  BadgeCheck,
+  ShieldCheck,
+  FileDown,
+} from "lucide-react"
 
 type Verdict = "good" | "medium" | "bad"
 
@@ -42,10 +55,10 @@ function clamp(min: number, x: number, max: number) {
 
 function monthlyLoanPayment(principal: number, annualRatePercent: number, years: number) {
   const r = annualRatePercent / 100 / 12
-  const n = years * 12
-  if (!principal || !n) return 0
-  if (r === 0) return principal / n
-  return (principal * r) / (1 - Math.pow(1 + r, -n))
+  const nn = years * 12
+  if (!principal || !nn) return 0
+  if (r === 0) return principal / nn
+  return (principal * r) / (1 - Math.pow(1 + r, -nn))
 }
 
 function round1(x: number) {
@@ -101,7 +114,15 @@ function compute(form: FormData) {
 
   const verdict: Verdict = cashflowAfterTax >= 100 ? "good" : cashflowAfterTax >= 0 ? "medium" : "bad"
 
+  const ready =
+    n(form.price) > 0 &&
+    n(form.monthlyRent) > 0 &&
+    n(form.durationYears) > 0 &&
+    n(form.interestRate) >= 0 &&
+    (n(form.loanAmount) > 0 || n(form.contribution) > 0)
+
   return {
+    ready,
     verdict,
     totalInvestment: Math.round(totalInvestment),
     monthlyIncome: Math.round(monthlyIncome),
@@ -126,11 +147,11 @@ export function PublicQuickSimPage() {
 
     contribution: "",
     loanAmount: "",
-    interestRate: "",
-    durationYears: "",
+    interestRate: "3.6", // ✅ défaut
+    durationYears: "20", // ✅ défaut
 
     monthlyRent: "",
-    vacancyRate: "",
+    vacancyRate: "5", // ✅ défaut
 
     rentChargesIncluded: true,
     recoverableChargesMonthly: "",
@@ -141,8 +162,9 @@ export function PublicQuickSimPage() {
     insuranceMonthly: "",
     maintenanceMonthly: "",
 
-    tmiPercent: "",
-    socialRatePercent: "",
+    // ✅ defaults “France classique”
+    tmiPercent: "30",
+    socialRatePercent: "17.2",
   })
 
   // ✅ Loan auto + override manuel
@@ -163,21 +185,21 @@ export function PublicQuickSimPage() {
 
   const verdictUI = {
     good: {
-      icon: <CheckCircle2 className="w-10 h-10 text-emerald-600 dark:text-emerald-500" />,
+      icon: <CheckCircle2 className="w-9 h-9 text-emerald-600 dark:text-emerald-500" />,
       title: "Bon deal",
       desc: "Cashflow net positif et rentabilité correcte.",
       box: "bg-emerald-50 dark:bg-emerald-900/20 border-emerald-200 dark:border-emerald-800",
       text: "text-emerald-700 dark:text-emerald-400",
     },
     medium: {
-      icon: <AlertCircle className="w-10 h-10 text-yellow-600 dark:text-yellow-500" />,
+      icon: <AlertCircle className="w-9 h-9 text-yellow-600 dark:text-yellow-500" />,
       title: "Deal moyen",
       desc: "Ça passe, mais optimisable (loyer, charges, financement).",
       box: "bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800",
       text: "text-yellow-700 dark:text-yellow-400",
     },
     bad: {
-      icon: <XCircle className="w-10 h-10 text-red-600 dark:text-red-500" />,
+      icon: <XCircle className="w-9 h-9 text-red-600 dark:text-red-500" />,
       title: "Mauvais deal",
       desc: "Cashflow net négatif et/ou rentabilité faible.",
       box: "bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800",
@@ -193,10 +215,16 @@ export function PublicQuickSimPage() {
     (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
       set(k as any, e.target.value as any)
 
-  const proLocked = true
+  // ✅ “Mode rapide / Avancé”
+  const [showAdvanced, setShowAdvanced] = useState(false)
+
+  // ✅ CTA qui s’adapte
+  const ctaLabel = res.ready ? "Sauvegarder + Export PDF (gratuit)" : "Créer un compte pour sauvegarder"
+  const ctaSub = res.ready ? "Tes simulations seront sauvegardées automatiquement." : "Fais une simu rapide, puis sauvegarde."
 
   return (
     <div className="bg-white dark:bg-gray-900">
+      {/* HERO */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 pb-10">
         <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6">
           <div>
@@ -210,12 +238,21 @@ export function PublicQuickSimPage() {
             </h1>
 
             <p className="mt-3 text-gray-600 dark:text-gray-400 max-w-2xl">
-              Tu remplis le minimum, on calcule cashflow + rentabilités + impôts (version simple micro). Pour sauvegarder et exporter → crée un compte gratuit.
+              Cashflow + rentabilité + impôts (micro) en direct. Pour sauvegarder, comparer et exporter → compte gratuit.
             </p>
+
+            <div className="mt-5 flex flex-wrap gap-3 text-sm">
+              <Pill icon={<BadgeCheck className="w-4 h-4" />} text="Résultat immédiat" />
+              <Pill icon={<ShieldCheck className="w-4 h-4" />} text="Sans CB" />
+              <Pill icon={<FileDown className="w-4 h-4" />} text="Export PDF avec compte" />
+            </div>
           </div>
 
           <div className="flex gap-3">
-            <Link to="/signup" className="px-5 py-3 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors inline-flex items-center gap-2">
+            <Link
+              to="/signup"
+              className="px-5 py-3 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors inline-flex items-center gap-2"
+            >
               Créer un compte <ArrowRight className="w-4 h-4" />
             </Link>
             <Link
@@ -228,11 +265,13 @@ export function PublicQuickSimPage() {
         </div>
       </section>
 
+      {/* CONTENT */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-14">
         <div className="grid lg:grid-cols-12 gap-6 items-start">
           {/* FORM */}
           <div className="lg:col-span-7 space-y-6">
-            <Card title="Bien + financement">
+            {/* MODE RAPIDE */}
+            <Card title="Mode rapide (à faire en 1er)" icon={<Sparkles className="w-5 h-5 text-emerald-600 dark:text-emerald-500" />}>
               <div className="grid md:grid-cols-3 gap-4">
                 <Input label="Prix d'achat" value={form.price} onChange={setStr("price")} suffix="€" placeholder="Ex: 180000" />
                 <Input label="Frais de notaire" value={form.notaryFees} onChange={setStr("notaryFees")} suffix="€" placeholder="Ex: 14400" />
@@ -256,12 +295,12 @@ export function PublicQuickSimPage() {
 
                   <div className="mt-2 flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
                     <span>
-                      Auto calculé : <b className="text-gray-900 dark:text-gray-100">{autoLoanAmount}€</b>
-                      {loanManual ? " (manuel activé)" : ""}
+                      Auto : <b className="text-gray-900 dark:text-gray-100">{autoLoanAmount}€</b>
+                      {loanManual ? " (manuel)" : ""}
                     </span>
 
                     {loanManual ? (
-                      <button type="button" onClick={() => setLoanManual(false)} className="underline hover:opacity-80" title="Revenir au calcul automatique">
+                      <button type="button" onClick={() => setLoanManual(false)} className="underline hover:opacity-80">
                         Repasser en auto
                       </button>
                     ) : (
@@ -272,7 +311,6 @@ export function PublicQuickSimPage() {
                           if (!form.loanAmount && autoLoanAmount) set("loanAmount", String(autoLoanAmount))
                         }}
                         className="underline hover:opacity-80"
-                        title="Forcer manuellement le montant emprunté"
                       >
                         Forcer manuel
                       </button>
@@ -285,76 +323,90 @@ export function PublicQuickSimPage() {
                 <Input label="Taux" value={form.interestRate} onChange={setStr("interestRate")} suffix="%" placeholder="Ex: 3.6" />
                 <Input label="Durée" value={form.durationYears} onChange={setStr("durationYears")} suffix="ans" placeholder="Ex: 20" />
               </div>
-            </Card>
 
-            <Card title="Revenus + charges">
-              <div className="grid md:grid-cols-2 gap-4">
+              <div className="grid md:grid-cols-2 gap-4 mt-4">
                 <Input label="Loyer mensuel" value={form.monthlyRent} onChange={setStr("monthlyRent")} suffix="€" placeholder="Ex: 850" />
                 <Input label="Vacance locative" value={form.vacancyRate} onChange={setStr("vacancyRate")} suffix="%" placeholder="Ex: 5" />
               </div>
 
-              <div className="grid md:grid-cols-2 gap-4 mt-4">
-                <Toggle label="Loyer charges comprises ?" checked={form.rentChargesIncluded} onChange={(v2) => set("rentChargesIncluded", v2)} />
-                {!form.rentChargesIncluded ? (
-                  <Input label="Charges récupérables" value={form.recoverableChargesMonthly} onChange={setStr("recoverableChargesMonthly")} suffix="€/mois" placeholder="Ex: 50" />
-                ) : (
-                  <div className="rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 p-4 text-sm text-gray-600 dark:text-gray-400">
-                    Charges récupérables désactivées (charges comprises).
-                  </div>
-                )}
-              </div>
-
-              <div className="grid md:grid-cols-2 gap-4 mt-4">
-                <Input label="Autres revenus" value={form.otherIncomeMonthly} onChange={setStr("otherIncomeMonthly")} suffix="€/mois" placeholder="Ex: 0" />
-                <Input label="Taxe foncière" value={form.propertyTaxAnnual} onChange={setStr("propertyTaxAnnual")} suffix="€/an" placeholder="Ex: 800" />
-              </div>
-
-              <div className="grid md:grid-cols-3 gap-4 mt-4">
-                <Input label="Copro" value={form.coOwnershipFeesMonthly} onChange={setStr("coOwnershipFeesMonthly")} suffix="€/mois" placeholder="Ex: 120" />
-                <Input label="Assurance PNO" value={form.insuranceMonthly} onChange={setStr("insuranceMonthly")} suffix="€/mois" placeholder="Ex: 25" />
-                <Input label="Entretien" value={form.maintenanceMonthly} onChange={setStr("maintenanceMonthly")} suffix="€/mois" placeholder="Ex: 50" />
-              </div>
+              <button
+                type="button"
+                onClick={() => setShowAdvanced((v) => !v)}
+                className="mt-5 w-full px-4 py-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 hover:opacity-90 transition-all text-sm text-gray-700 dark:text-gray-300"
+              >
+                {showAdvanced ? "Masquer les options avancées" : "Afficher les options avancées (facultatif)"}
+              </button>
             </Card>
 
-            {/* 🔒 PRO+ teasing */}
-            <Card title="Compte pro (aperçu)">
+            {/* AVANCÉ */}
+            {showAdvanced && (
+              <>
+                <Card title="Revenus (détails)">
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <Toggle label="Loyer charges comprises ?" checked={form.rentChargesIncluded} onChange={(v2) => set("rentChargesIncluded", v2)} />
+                    {!form.rentChargesIncluded ? (
+                      <Input
+                        label="Charges récupérables"
+                        value={form.recoverableChargesMonthly}
+                        onChange={setStr("recoverableChargesMonthly")}
+                        suffix="€/mois"
+                        placeholder="Ex: 50"
+                      />
+                    ) : (
+                      <div className="rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 p-4 text-sm text-gray-600 dark:text-gray-400">
+                        Charges récupérables désactivées (charges comprises).
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="grid md:grid-cols-2 gap-4 mt-4">
+                    <Input label="Autres revenus" value={form.otherIncomeMonthly} onChange={setStr("otherIncomeMonthly")} suffix="€/mois" placeholder="Ex: 0" />
+                    <Input label="Taxe foncière" value={form.propertyTaxAnnual} onChange={setStr("propertyTaxAnnual")} suffix="€/an" placeholder="Ex: 800" />
+                  </div>
+                </Card>
+
+                <Card title="Charges (base)">
+                  <div className="grid md:grid-cols-3 gap-4">
+                    <Input label="Copro" value={form.coOwnershipFeesMonthly} onChange={setStr("coOwnershipFeesMonthly")} suffix="€/mois" placeholder="Ex: 120" />
+                    <Input label="Assurance PNO" value={form.insuranceMonthly} onChange={setStr("insuranceMonthly")} suffix="€/mois" placeholder="Ex: 25" />
+                    <Input label="Entretien" value={form.maintenanceMonthly} onChange={setStr("maintenanceMonthly")} suffix="€/mois" placeholder="Ex: 50" />
+                  </div>
+                </Card>
+
+                <Card title="Impôts (hypothèses micro)">
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <Input label="TMI (estimation)" value={form.tmiPercent} onChange={setStr("tmiPercent")} suffix="%" placeholder="Ex: 30" />
+                    <Input label="Prélèvements sociaux" value={form.socialRatePercent} onChange={setStr("socialRatePercent")} suffix="%" placeholder="Ex: 17.2" />
+                  </div>
+                  <div className="mt-3 text-xs text-gray-500 dark:text-gray-400">
+                    Astuce : laisse les valeurs par défaut si tu veux juste une estimation rapide.
+                  </div>
+                </Card>
+              </>
+            )}
+
+            {/* TEASING PRO */}
+            <Card title="Pro+ (aperçu)" icon={<Lock className="w-5 h-5 text-amber-700 dark:text-amber-300" />}>
               <LockBanner />
-
-              <div className="mt-4 grid md:grid-cols-2 gap-4">
-                <Select
-                  label="Mode fiscal"
-                  value="real"
-                  onChange={() => {}}
-                  disabled={proLocked}
-                  options={[
-                    { value: "micro", label: "Micro-BIC" },
-                    { value: "real", label: "Réel (LMNP)" },
-                  ]}
-                />
-                <Toggle label="Meublé ?" checked={true} onChange={() => {}} disabled={proLocked} />
-              </div>
-
-              <div className="mt-4 grid md:grid-cols-3 gap-4">
-                <Input label="Gestion locative" value="" onChange={() => {}} suffix="%" placeholder="Ex: 7" disabled={proLocked} />
-                <Input label="Frais comptable" value="" onChange={() => {}} suffix="€/an" placeholder="Ex: 600" disabled={proLocked} />
-                <Input label="Capex annuel" value="" onChange={() => {}} suffix="€/an" placeholder="Ex: 800" disabled={proLocked} />
-              </div>
-
               <div className="mt-4 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 p-4 text-sm text-gray-600 dark:text-gray-400">
-                Amortissements, charges détaillées, PDF complet, comparaison de scénarios… dispo après création de compte.
+                LMNP réel, amortissements, charges détaillées, PDF complet, comparaison de scénarios… dispo avec un compte.
               </div>
             </Card>
           </div>
 
-          {/* RESULT */}
-          <div className="lg:col-span-5 space-y-6">
+          {/* RESULT (sticky) */}
+          <div className="lg:col-span-5 space-y-6 lg:sticky lg:top-6">
             <div className="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 overflow-hidden">
               <div className="p-5 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-500 dark:text-gray-400">Résultat</p>
                   <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Cashflow mensuel (après impôts)</h2>
                 </div>
-                {res.cashflowAfterTax >= 0 ? <TrendingUp className="w-6 h-6 text-emerald-600 dark:text-emerald-500" /> : <TrendingDown className="w-6 h-6 text-red-600 dark:text-red-500" />}
+                {res.cashflowAfterTax >= 0 ? (
+                  <TrendingUp className="w-6 h-6 text-emerald-600 dark:text-emerald-500" />
+                ) : (
+                  <TrendingDown className="w-6 h-6 text-red-600 dark:text-red-500" />
+                )}
               </div>
 
               <div className="p-6">
@@ -396,25 +448,23 @@ export function PublicQuickSimPage() {
                   </div>
                 </div>
 
-                {/* ✅ CTA qui motive (sans sauvegarde maintenant) */}
+                {/* CTA */}
                 <div className="mt-5">
                   <Link
                     to="/signup"
                     className="w-full inline-flex items-center justify-center gap-2 px-5 py-3 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors shadow-lg shadow-emerald-600/20"
                   >
-                    Sauvegarder cette simu + Export PDF <ArrowRight className="w-4 h-4" />
+                    {ctaLabel} <ArrowRight className="w-4 h-4" />
                   </Link>
 
-                  <div className="mt-2 text-xs text-gray-500 dark:text-gray-400 text-center">
-                    Crée un compte gratuit et <b className="text-gray-900 dark:text-gray-100">tes simulations seront sauvegardées automatiquement</b>.
-                  </div>
+                  <div className="mt-2 text-xs text-gray-500 dark:text-gray-400 text-center">{ctaSub}</div>
                 </div>
               </div>
             </div>
 
             <div className="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-5">
               <div className="text-sm text-gray-600 dark:text-gray-400">
-                ⚠️ Version “simple” : micro-bic + impôt estimatif. Dans l’app (avec compte), tu peux faire LMNP réel, amortissements, charges détaillées, PDF complet, comparaison…
+                ⚠️ Version “simple” : micro-bic + impôt estimatif. Avec un compte : LMNP réel, amortissements, charges détaillées, PDF complet, comparaison…
               </div>
               <div className="mt-4 flex gap-3">
                 <Link to="/pricing" className="px-4 py-2 rounded-lg bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
@@ -434,11 +484,28 @@ export function PublicQuickSimPage() {
 
 /* ===================== UI ===================== */
 
-function Card({ title, children }: { title: string; children: React.ReactNode }) {
+function Pill({ icon, text }: { icon: React.ReactNode; text: string }) {
+  return (
+    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-200">
+      {icon}
+      <span>{text}</span>
+    </div>
+  )
+}
+
+function Card({
+  title,
+  children,
+  icon,
+}: {
+  title: string
+  children: React.ReactNode
+  icon?: React.ReactNode
+}) {
   return (
     <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
       <div className="flex items-center gap-2 mb-5">
-        <Calculator className="w-5 h-5 text-emerald-600 dark:text-emerald-500" />
+        {icon ?? <Calculator className="w-5 h-5 text-emerald-600 dark:text-emerald-500" />}
         <h2 className="text-lg font-semibold">{title}</h2>
       </div>
       {children}
@@ -454,7 +521,9 @@ function LockBanner() {
           <Lock className="w-5 h-5 text-amber-700 dark:text-amber-300 mt-0.5" />
           <div>
             <div className="font-semibold text-amber-900 dark:text-amber-100">Pro+ (verrouillé)</div>
-            <div className="text-sm text-amber-800 dark:text-amber-200 mt-1">Crée un compte pour débloquer LMNP réel, amortissements et export PDF.</div>
+            <div className="text-sm text-amber-800 dark:text-amber-200 mt-1">
+              Crée un compte pour débloquer LMNP réel, amortissements et export PDF.
+            </div>
           </div>
         </div>
         <Link to="/signup" className="shrink-0 px-4 py-2 rounded-lg bg-amber-600 text-white hover:opacity-90">
@@ -528,40 +597,6 @@ function Toggle({
           {checked ? "Oui" : "Non"}
         </span>
       </button>
-    </div>
-  )
-}
-
-function Select({
-  label,
-  value,
-  onChange,
-  options,
-  disabled,
-}: {
-  label: string
-  value: string
-  onChange: (e: React.ChangeEvent<HTMLSelectElement>) => void
-  options: { value: string; label: string }[]
-  disabled?: boolean
-}) {
-  return (
-    <div className={disabled ? "opacity-60" : ""}>
-      <label className="block text-sm mb-2 text-gray-700 dark:text-gray-300">{label}</label>
-      <select
-        value={value}
-        onChange={onChange}
-        disabled={disabled}
-        className={`w-full px-4 py-3 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none transition-all text-gray-900 dark:text-gray-100 ${
-          disabled ? "cursor-not-allowed" : ""
-        }`}
-      >
-        {options.map((o) => (
-          <option key={o.value} value={o.value}>
-            {o.label}
-          </option>
-        ))}
-      </select>
     </div>
   )
 }
