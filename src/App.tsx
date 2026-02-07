@@ -19,6 +19,8 @@ import { SimulationInvestissementLocatifPage } from "./components/seo/Simulation
 import { CashflowImmobilierPage } from "./components/seo/CashflowImmobilierPage"
 import { CalculRentabiliteLocativePage } from "./components/seo/CalculRentabiliteLocativePage"
 import { RentabiliteLMNPPage } from "./components/seo/RentabiliteLMNPPage"
+import { ProjectsAPI } from "../src/services/projects.api"
+
 
 // ✅ NEW (page publique simulateur rapide)
 import { PublicQuickSimPage } from './components/PublicQuickSimPage'
@@ -379,15 +381,48 @@ function AuthRedirect({ mode }: { mode: 'login' | 'signup' }) {
 
 function DashboardWrapper() {
   const navigate = useNavigate()
+  const { getAccessTokenSilently } = useAuth0()
+
+  const [checking, setChecking] = useState(true)
+
+  useEffect(() => {
+    let alive = true
+
+    ;(async () => {
+      try {
+        // ✅ même méthode que ton Dashboard
+        const list = await ProjectsAPI.list(getAccessTokenSilently)
+
+        if (!alive) return
+
+        if (!list || list.length === 0) {
+          navigate("/projects/new", { replace: true })
+          return
+        }
+      } catch (e) {
+        // si erreur, on laisse afficher le dashboard (il gérera error state)
+        console.error("DashboardWrapper check projects error:", e)
+      } finally {
+        if (alive) setChecking(false)
+      }
+    })()
+
+    return () => {
+      alive = false
+    }
+  }, [getAccessTokenSilently, navigate])
+
+  if (checking) return null
 
   return (
     <Dashboard
-      onCreateProject={() => navigate('/projects/new')}
+      onCreateProject={() => navigate("/projects/new")}
       onSelectProject={(id) => navigate(`/projects/${id}/edit`)}
       onViewResults={(id) => navigate(`/projects/${id}/results`)}
     />
   )
 }
+
 
 /* ===================== NAVS ===================== */
 function PublicNav({ isAuthenticated }: { isAuthenticated: boolean }) {
