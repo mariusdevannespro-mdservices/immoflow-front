@@ -21,6 +21,13 @@ import { CalculRentabiliteLocativePage } from "./components/seo/CalculRentabilit
 import { RentabiliteLMNPPage } from "./components/seo/RentabiliteLMNPPage"
 import { ProjectsAPI } from "../src/services/projects.api"
 
+const MAINTENANCE =
+  String(import.meta.env.VITE_MAINTENANCE ?? "").toLowerCase() === "true" ||
+  String(import.meta.env.VITE_MAINTENANCE ?? "") === "1"
+
+const MAINTENANCE_MESSAGE =
+  import.meta.env.VITE_MAINTENANCE_MESSAGE ?? "Site en maintenance."
+
 
 // ✅ NEW (page publique simulateur rapide)
 import { PublicQuickSimPage } from './components/PublicQuickSimPage'
@@ -299,6 +306,19 @@ export default function App() {
   }, [isAuthenticated])
 
   const meValue = useMemo(() => ({ me, meLoading, refreshMe }), [me, meLoading])
+
+  if (MAINTENANCE) {
+    return (
+      <div className={isDark ? "dark" : ""}>
+        <div className="min-h-screen bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 flex items-center justify-center px-6">
+          <div className="max-w-lg w-full text-center">
+            <h1 className="text-2xl font-semibold mb-2">Maintenance</h1>
+            <p className="text-gray-600 dark:text-gray-400">{MAINTENANCE_MESSAGE}</p>
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <ThemeContext.Provider value={themeValue}>
