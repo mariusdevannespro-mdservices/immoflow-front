@@ -22,8 +22,8 @@ import { RentabiliteLMNPPage } from "./components/seo/RentabiliteLMNPPage"
 import { ProjectsAPI } from "../src/services/projects.api"
 
 const MAINTENANCE =
-  String(import.meta.env.VITE_MAINTENANCE ?? "").toLowerCase() === "true" ||
-  String(import.meta.env.VITE_MAINTENANCE ?? "") === "1"
+  String(import.meta.env.VITE_MAINTENANCE ?? "true").toLowerCase() !== "false" &&
+  String(import.meta.env.VITE_MAINTENANCE ?? "true") !== "0"
 
 const MAINTENANCE_MESSAGE =
   import.meta.env.VITE_MAINTENANCE_MESSAGE ?? "Site en maintenance."
